@@ -1,0 +1,50 @@
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+library(dplyr)
+```
+```{r}
+rm(list = ls())
+
+us_tilapia_imports <- (read_csv(here::here("data", "us_tilapia_imports.csv")))
+skimr::skim(us_tilapia_imports)
+names(us_tilapia_imports)
+us_tilapia_data <- pivot_longer(us_tilapia_imports, cols = -country, names_to = "year", values_to = "imports")
+  
+us_tilapia_data <- us_tilapia_data %>% dplyr::mutate(year =  as.numeric(year)) 
+
+class(us_tilapia_data$year)
+
+
+yearly_tilapia_tot <- us_tilapia_data %>% dplyr::group_by(year) %>% summarize(total_imports = sum(imports, na.rm = TRUE)) 
+
+
+```
+```{r}
+
+
+ggplot(yearly_tilapia_tot, aes(x = year, y = total_imports))+
+  geom_line()+
+  labs(x =  "import years", y = "total imports in thousands of pounds")
+
+ggsave(here::here("figs","total_imports_all_years.png"))
+
+
+```
+```{r}
+
+
+countries_sub <- us_tilapia_data %>% dplyr::filter(country %in% c("Honduras","Costa Rica","Mexico","Ecuador")) %>% 
+  filter(!is.na(imports))
+
+ggplot(countries_sub, aes(x = country))+
+  geom_bar(aes(color= country, fill = country))+
+  labs(x = "Country", y = "Total imports in thousands of pounds")
+
+ggsave(here::here("figs","countries_imports.jpg"))
+
+
+
+```
+
